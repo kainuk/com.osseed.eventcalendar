@@ -37,6 +37,20 @@ require_once 'CRM/Core/Page.php';
 
 class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
 
+  private function eventLocation($eventId){
+    $addressId = CRM_Core_DAO::singleValueQuery('
+    select lb.address_id from civicrm_event evnt
+    join   civicrm_loc_block lb on (evnt.loc_block_id = lb.id)
+    and    evnt.id = %1
+    ',[1 => [$eventId,'Integer']]);
+    if($addressId){
+      $address = civicrm_api3('Address','getsingle',['id' => $addressId]);
+      return CRM_Utils_Address::format($address);
+    } else {
+      return false;
+    }
+  }
+
   public function run() {
     CRM_Core_Resources::singleton()->addScriptFile('com.osseed.eventcalendar', 'js/moment.js', 5);
     CRM_Core_Resources::singleton()->addScriptFile('com.osseed.eventcalendar', 'js/fullcalendar.js', 10);
@@ -132,6 +146,7 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
           $eventData['eventType'] = $civieventTypesList[$dao->event_type];
         }
       }
+      $eventData['location'] = $this->eventLocation($dao->id);
 
       $enrollment_status = civicrm_api3('Event', 'getsingle', [
         'return' => ['is_full'],
