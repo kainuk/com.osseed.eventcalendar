@@ -132,7 +132,10 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
 
     while ($dao->fetch()) {
       $eventData = array();
-      $dao->url = html_entity_decode(CRM_Utils_System::url('civicrm/event/info', 'id=' . $dao->id ?:NULL));
+      $dao->url = html_entity_decode(CRM_Utils_System::url('civicrm/event/manage/settings',[
+         'reset' => 1,
+         'action' => 'update',
+         'id' =>  $dao->id]));
       foreach ($eventCalendarParams as $k) {
         $eventData[$k] = $dao->$k;
         if (!empty($eventTypes)) {
