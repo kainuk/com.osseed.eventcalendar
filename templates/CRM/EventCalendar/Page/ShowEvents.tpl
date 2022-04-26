@@ -61,7 +61,7 @@ function buildCalendar( ) {
     displayEventEnd: true,
     displayEventTime: showTime ? 1 : 0,
     firstDay:weekStartDay,
-    timeFormat: 'H(:mm)',
+    timeFormat: 'H:mm',
     header: {
       left: 'prev,next today',
       center: 'title',
