@@ -38,17 +38,13 @@ require_once 'CRM/Core/Page.php';
 class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
 
   private function eventLocation($eventId){
-    $addressId = CRM_Core_DAO::singleValueQuery('
-    select lb.address_id from civicrm_event evnt
-    join   civicrm_loc_block lb on (evnt.loc_block_id = lb.id)
-    and    evnt.id = %1
-    ',[1 => [$eventId,'Integer']]);
-    if($addressId){
-      $address = civicrm_api3('Address','getsingle',['id' => $addressId]);
-      return CRM_Utils_Address::format($address);
-    } else {
-      return false;
-    }
+    return CRM_Core_DAO::singleValueQuery("
+    select ifnull(adr.name, concat(adr.street_address, ' :: ', adr.city))
+    from civicrm_event evnt
+              join civicrm_loc_block lb on (evnt.loc_block_id = lb.id)
+              join civicrm_address adr on (lb.address_id = adr.id)
+    where evnt.id = %1
+    ",[1 => [$eventId,'Integer']]);
   }
 
   public function run() {

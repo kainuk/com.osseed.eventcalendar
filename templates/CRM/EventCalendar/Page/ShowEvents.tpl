@@ -1,11 +1,20 @@
+<div class='fc-toolbar fc-header-toolbar'>
 {if $eventTypes == TRUE}
-  <select id="event_selector" class="crm-form-select crm-select2 crm-action-menu fa-plus">
+  <select id="event_selector" class="crm-form-select crm-select2 crm-action-menu fa-plu fc-left">
     <option value="all">{ts}All{/ts}</option>
     {foreach from=$eventTypes item=type}
-    <option value="{$type}">{$type}</option>
+         <option value="{$type}">{$type}</option>
     {/foreach}
   </select>
 {/if}
+  <div class="event-title-search fc-right" id="civievents-calendar-titles">
+    <label>Title</label>
+    <input id="event_title" type="text" name="event_title"/>
+  </div>
+  <div class="fc-clear"></div>
+
+</div>
+
 <div id="calendar"></div>
 {literal}
 <script type="text/javascript">
@@ -70,14 +79,24 @@ function buildCalendar( ) {
 
     eventRender: function eventRender( event, element, view ) {
       element.append(event.location);
+      show = false;
       if(event.eventType && events_data.isfilter == "1" ) {
-        return ['all', event.eventType].indexOf(cj('#event_selector').val()) >= 0
+        show = ['all', event.eventType].indexOf(cj('#event_selector').val()) >= 0
       }
+      selectedTitle = cj('#event_title').val();
+      if(selectedTitle.length>0){
+        debugger;
+        show = show && (event.title.toLowerCase().includes(selectedTitle.toLowerCase()));
+      }
+      return show;
     }
   });
 
   CRM.$(function($) {
     $("#event_selector").change(function() {
+      cj('#calendar').fullCalendar('rerenderEvents');
+    });
+    $("#event_title").on("input",function() {
       cj('#calendar').fullCalendar('rerenderEvents');
     });
   });
