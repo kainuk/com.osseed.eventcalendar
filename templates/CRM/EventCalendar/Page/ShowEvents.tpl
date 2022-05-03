@@ -1,15 +1,28 @@
 <div class='fc-toolbar fc-header-toolbar'>
 {if $eventTypes == TRUE}
-  <select id="event_selector" class="crm-form-select crm-select2 crm-action-menu fa-plu fc-left">
+  <div class=" fc-left">
+  <label>{ts}Event Type{/ts}</label>
+  <select id="event_selector" class="crm-form-select crm-select2 crm-action-menu fa-plu">
     <option value="all">{ts}All{/ts}</option>
     {foreach from=$eventTypes item=type}
          <option value="{$type}">{$type}</option>
     {/foreach}
   </select>
+  </div>
 {/if}
+  <div class="fc-center">
+  <label class="label">{ts}Zaal{/ts}</label>
+  <select class="crm-form-select crm-select2 crm-action-menu" id="event_room">
+      <option value="all">{ts}All{/ts}</option>
+      {foreach from=$rooms key=key item=room}
+        <option value="{$key}">{$room}</option>
+      {/foreach}
+  </select>
+  </div>
   <div class="event-title-search fc-right" id="civievents-calendar-titles">
     <label>Title</label>
-    <input id="event_title" type="text" name="event_title"/>
+    <input id="event_title" class="crm-form-text" type="text" name="event_title"/>
+  </div>
   </div>
   <div class="fc-clear"></div>
 
@@ -85,8 +98,12 @@ function buildCalendar( ) {
       }
       selectedTitle = cj('#event_title').val();
       if(selectedTitle.length>0){
-        debugger;
         show = show && (event.title.toLowerCase().includes(selectedTitle.toLowerCase()));
+      }
+      eventRoom = cj('#event_room').val();
+      if(eventRoom!=='all'){
+        debugger;
+        show = show && Object.values(event.rooms).includes(eventRoom);
       }
       return show;
     }
@@ -97,6 +114,9 @@ function buildCalendar( ) {
       cj('#calendar').fullCalendar('rerenderEvents');
     });
     $("#event_title").on("input",function() {
+      cj('#calendar').fullCalendar('rerenderEvents');
+    });
+    $("#event_room").on("input",function() {
       cj('#calendar').fullCalendar('rerenderEvents');
     });
   });

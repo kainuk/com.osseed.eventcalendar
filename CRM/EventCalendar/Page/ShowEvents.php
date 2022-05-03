@@ -37,14 +37,26 @@ require_once 'CRM/Core/Page.php';
 
 class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
 
-  private function eventLocation($eventId){
-    return CRM_Core_DAO::singleValueQuery("
-    select ifnull(adr.name, concat(adr.street_address, ' :: ', adr.city))
-    from civicrm_event evnt
-              join civicrm_loc_block lb on (evnt.loc_block_id = lb.id)
-              join civicrm_address adr on (lb.address_id = adr.id)
-    where evnt.id = %1
-    ",[1 => [$eventId,'Integer']]);
+  private function zalenOptionGroupId(){
+    return civicrm_api3('CustomField', 'getvalue', [
+      'return' => "option_group_id",
+      'name' => "muntpunt_zalen",
+    ]);
+  }
+
+  private function roomList($groupId){
+     $result = civicrm_api3('OptionValue', 'get', [
+      'option_group_id' => $groupId,
+      'options' => [
+        'limit' => 0,
+        'sort' => 'label'
+      ]
+     ]);
+     $options = [];
+     foreach($result['values'] as $value){
+       $options[$value['value']] = $value['label'];
+     }
+     return $options;
   }
 
   public function run() {
@@ -100,8 +112,18 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
     //Check recurringEvent is available or not.
     if(isset($settings['recurring_event']) && $settings['recurring_event'] == 1) {
       $query = "
-        SELECT `entity_id` id ,`title` title, `start_date` start, `end_date` end ,`event_type_id` event_type
-        FROM `civicrm_event` LEFT JOIN civicrm_recurring_entity ON civicrm_recurring_entity.entity_id = civicrm_event.id
+        SELECT `civicrm_recurring_entity`.`entity_id` id,
+               `title` title,
+               `start_date` start,
+               `end_date` end ,
+               `event_type_id` event_type,
+               info.muntpunt_zalen rooms,
+               ifnull(adr.name, concat(adr.street_address, ' :: ', adr.city)) location
+        FROM `civicrm_event`
+        LEFT JOIN civicrm_recurring_entity ON civicrm_recurring_entity.entity_id = civicrm_event.id
+        LEFT JOIN civicrm_value_extra_evenement_info info ON (info.entity_id = civicrm_event.id)
+        JOIN civicrm_loc_block lb ON (civicrm_event.loc_block_id = lb.id)
+        JOIN civicrm_address adr ON (lb.address_id = adr.id)
         WHERE civicrm_recurring_entity.entity_table='civicrm_event'
           AND civicrm_event.is_active = 1
           AND civicrm_event.is_template = 0
@@ -109,8 +131,17 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
     }
     else {
       $query = "
-        SELECT `id`, `title`, `start_date` start, `end_date` end ,`event_type_id` event_type
+        SELECT `civicrm_event`.`id`,
+               `title`,
+               `start_date` start,
+               `end_date` end ,
+               `event_type_id` event_type,
+               info.muntpunt_zalen rooms,
+               ifnull(adr.name, concat(adr.street_address, ' :: ', adr.city)) location
         FROM `civicrm_event`
+        LEFT JOIN civicrm_value_extra_evenement_info info ON (info.entity_id = civicrm_event.id)
+        JOIN civicrm_loc_block lb ON (civicrm_event.loc_block_id = lb.id)
+        JOIN civicrm_address adr ON (lb.address_id = adr.id)
         WHERE civicrm_event.is_active = 1
           AND civicrm_event.is_template = 0
       ";
@@ -120,11 +151,13 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
     $events['events'] = array();
 
     $dao = CRM_Core_DAO::executeQuery($query);
-    $eventCalendarParams = array('title' => 'title', 'start' => 'start', 'url' => 'url');
+    $eventCalendarParams = array('title' => 'title', 'start' => 'start', 'url' => 'url', 'location' => 'location', 'rooms'=>'rooms');
 
     if (!empty($settings['event_end_date'])) {
       $eventCalendarParams['end'] = 'end';
     }
+
+    $roomList = $this->roomList($this->zalenOptionGroupId());
 
     while ($dao->fetch()) {
       $eventData = array();
@@ -145,7 +178,16 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
           $eventData['eventType'] = $civieventTypesList[$dao->event_type];
         }
       }
-      $eventData['location'] = $this->eventLocation($dao->id);
+      $rooms = array_filter(explode(CRM_Core_DAO::VALUE_SEPARATOR,$eventData['rooms']),
+        function($x){ return !empty($x); }
+      );
+      $eventData['rooms'] = $rooms;
+      if(!empty($rooms)){
+        $eventData['location'] = implode(',',array_map(
+          function($key) use ($roomList) {return $roomList[$key];},
+          $rooms
+        ));
+      }
 
       $enrollment_status = civicrm_api3('Event', 'getsingle', [
         'return' => ['is_full'],
@@ -169,6 +211,8 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
       $events['eventTypes'][]  = $eventTypesFilter;
       $this->assign('eventTypes', $eventTypesFilter);
     }
+
+    $this->assign('rooms', $roomList);
 
     $events['displayEventEnd'] = 'true';
 
