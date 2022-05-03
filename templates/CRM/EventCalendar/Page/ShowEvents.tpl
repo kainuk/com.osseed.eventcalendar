@@ -11,8 +11,8 @@
   </div>
 {/if}
   <div class="fc-center">
-  <label class="label">{ts}Zaal{/ts}</label>
-  <select class="crm-form-select crm-select2 crm-action-menu" id="event_room">
+  <label for="event_room">{ts}Zaal{/ts}</label>
+  <select class="crm-form-select crm-select2 crm-action-menu" id="event_room" multiple="multiple">
       <option value="all">{ts}All{/ts}</option>
       {foreach from=$rooms key=key item=room}
         <option value="{$key}">{$room}</option>
