@@ -40,7 +40,7 @@ class CRM_EventCalendar_Form_EventCalendarSettings extends CRM_Core_Form {
       $descriptions['show_past_events'] = ts('Show past events as well as current/future.');
       $this->add('advcheckbox', 'show_end_date', ts('Show End Date?'));
       $descriptions['show_end_date'] = ts('Show the event with start and end dates on the calendar.');
-      $this->add('advcheckbox', 'show_public_events', ts('Show Public Events?'));
+      $this->add('advcheckbox', 'show_public_events', ts('Show only Public Events?'));
       $descriptions['show_public_events'] = ts('Show only public events, or all events.');
       $this->add('advcheckbox', 'events_by_month', ts('Show Events by Month?'));
       $descriptions['events_by_month'] = ts('Show the month parameter on calendar.');
