@@ -20,7 +20,7 @@
   </select>
   </div>
   <div class="event-title-search fc-right" id="civievents-calendar-titles">
-    <label>Title</label>
+    <label>{ts}Title{/ts}</label>
     <input id="event_title" class="crm-form-text" type="text" name="event_title"/>
   </div>
   </div>
