@@ -91,7 +91,7 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
     }
 
     //Show/Hide Past Events
-    $currentDate = date("Y-m-d h:i:s", time());
+    $currentDate = date("Y-m-d h:i:s", time() - (86400 * 60));
     if (empty($settings['event_past'])) {
       $whereCondition .= " AND civicrm_event.start_date > '" . $currentDate . "'";
     }
