@@ -1,8 +1,8 @@
 <div class='fc-toolbar fc-header-toolbar'>
 {if $eventTypes == TRUE}
   <div class=" fc-left">
-  <label>{ts}Event Type{/ts}</label>
-  <select id="event_selector" class="crm-form-select crm-select2 crm-action-menu fa-plu">
+  <label for="event_selector">{ts}Event Type{/ts}</label>
+    <select id="event_selector" class="crm-form-select crm-select2 crm-action-menu fa-plu" multiple="multiple">
     <option value="all">{ts}All{/ts}</option>
     {foreach from=$eventTypes item=type}
          <option value="{$type}">{$type}</option>
@@ -20,7 +20,7 @@
   </select>
   </div>
   <div class="event-title-search fc-right" id="civievents-calendar-titles">
-    <label>{ts}Title{/ts}</label>
+    <label for="event_title">{ts}Title{/ts}</label>
     <input id="event_title" class="crm-form-text" type="text" name="event_title"/>
   </div>
   </div>
@@ -92,31 +92,31 @@ function buildCalendar( ) {
 
     eventRender: function eventRender( event, element, view ) {
       element.append(event.location);
-      show = false;
-      if(event.eventType && events_data.isfilter == "1" ) {
-        show = ['all', event.eventType].indexOf(cj('#event_selector').val()) >= 0
+      show = true;
+      eventTypes = cj('#event_selector').val();
+      if(eventTypes) {
+        show = show && eventTypes.includes(event.eventType);
       }
       selectedTitle = cj('#event_title').val();
       if(selectedTitle.length>0){
         show = show && (event.title.toLowerCase().includes(selectedTitle.toLowerCase()));
       }
-      eventRoom = cj('#event_room').val();
-      if(eventRoom!=='all'){
-        debugger;
-        show = show && Object.values(event.rooms).includes(eventRoom);
+      eventRooms = cj('#event_room').val();
+      if(eventRooms){
+        show = show && ((Object.values(event.rooms).filter(value => eventRooms.includes(value))).length > 0);
       }
       return show;
     }
   });
 
   CRM.$(function($) {
-    $("#event_selector").change(function() {
+    $("#event_selector").select2().change(function() {
       cj('#calendar').fullCalendar('rerenderEvents');
     });
     $("#event_title").on("input",function() {
       cj('#calendar').fullCalendar('rerenderEvents');
     });
-    $("#event_room").on("input",function() {
+    $("#event_room").select2().change(function() {
       cj('#calendar').fullCalendar('rerenderEvents');
     });
   });
