@@ -197,8 +197,7 @@ class CRM_EventCalendar_Page_ShowEvents extends CRM_Core_Page {
       // Show/Hide enrollment status
       if(!empty($settings['enrollment_status'])) {
         if( !(isset($enrollment_status['is_error']))  && ( $enrollment_status['is_full'] == "1" ) ) {
-          $eventData['url']='';
-          $eventData['title'] ='VOL' .  $eventData['title'];
+          $eventData['title'] ='VOL ' .  $eventData['title'];
         }
       }
       $events['timeDisplay'] = !empty($settings['event_time']) ?: '';
