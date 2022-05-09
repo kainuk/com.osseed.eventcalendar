@@ -106,6 +106,10 @@ function buildCalendar( ) {
         show = show && ((Object.values(event.rooms).filter(value => eventRooms.includes(value))).length > 0);
       }
       return show;
+    },
+
+    eventAfterRender: function eventRender( event, element, view ) {
+      element.attr('target','_blank');
     }
   });
 
